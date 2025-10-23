@@ -33,7 +33,7 @@ RUN cd / && \
         libpcre3-dev && \
     \
     cd / && \
-    curl https://www.openssl.org/source/$VERSION_OPENSSL.tar.gz -O && \
+    curl -L https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1m/$VERSION_OPENSSL.tar.gz -O && \
     tar xvf $VERSION_OPENSSL.tar.gz && rm $VERSION_OPENSSL.tar.gz && cd $VERSION_OPENSSL && \
     ./config --prefix=/usr/local/openssl --openssldir=/usr/local/openssl shared enable-ssl3 enable-ssl3-method enable-weak-ssl-ciphers && make install_sw && make install_ssldirs && \
     \
@@ -92,10 +92,11 @@ RUN cd / && \
     #
     dpkg --add-architecture i386 && \
     curl https://dl.winehq.org/wine-builds/winehq.key -O && \
-    apt-key add winehq.key && \
-    echo "deb https://dl.winehq.org/wine-builds/debian/ bullseye main" >> /etc/apt/sources.list && \
-    apt update && apt -y install --install-recommends winehq-devel=8.0~rc5~bullseye-1 && \
-    rm winehq.key && \
+    mkdir -p /etc/apt/keyrings && \
+    mv winehq.key /etc/apt/keyrings/winehq-archive.key && \
+    echo "deb [signed-by=/etc/apt/keyrings/winehq-archive.key] https://dl.winehq.org/wine-builds/debian/ bullseye main" > /etc/apt/sources.list.d/winehq.list && \
+    apt update && apt -y install --install-recommends winehq-devel && \
+    rm /etc/apt/keyrings/winehq-archive.key && \
     \
     #
     # Install Wine Mono
