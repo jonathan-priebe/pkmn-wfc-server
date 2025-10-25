@@ -102,11 +102,15 @@ RUN cd / && \
     # Install Wine Mono
     # info: https://wiki.winehq.org/Mono
     #
-    curl https://dl.winehq.org/wine/wine-mono/$WINE_MONO_VERSION/wine-mono-$WINE_MONO_VERSION-x86.tar.xz -O && \
-    tar xfv wine-mono-$WINE_MONO_VERSION-x86.tar.xz && \
-    mkdir -p /usr/share/wine/mono && \
-    mv wine-mono-$WINE_MONO_VERSION/ /usr/share/wine/mono/ && \
-    rm wine-mono-$WINE_MONO_VERSION-x86.tar.xz && \
+    #curl https://dl.winehq.org/wine/wine-mono/$WINE_MONO_VERSION/wine-mono-$WINE_MONO_VERSION-x86.tar.xz -O && \
+    #tar xfv wine-mono-$WINE_MONO_VERSION-x86.tar.xz && \
+    #mkdir -p /usr/share/wine/mono && \
+    #mv wine-mono-$WINE_MONO_VERSION/ /usr/share/wine/mono/ && \
+    #rm wine-mono-$WINE_MONO_VERSION-x86.tar.xz && \
+    wineboot --init && \
+    curl -LO https://dl.winehq.org/wine/wine-mono/${WINE_MONO_VERSION}/wine-mono-${WINE_MONO_VERSION}-x86.msi && \
+    wine msiexec /i wine-mono-${WINE_MONO_VERSION}-x86.msi /quiet && \
+    rm wine-mono-${WINE_MONO_VERSION}-x86.msi && \
     \
     #
     # Clone & build pkmn-classic-framework repository
@@ -140,7 +144,8 @@ RUN cd / && \
     gzip -d veekun-pokedex.sqlite.gz && \
     mv veekun-pokedex.sqlite pkmn-classic-framework/VeekunImport/bin/Debug/pokedex.sqlite && \
     echo "[mysqld]\nlower_case_table_names=1" >> /etc/mysql/my.cnf && \
-    service mariadb start && \
+    mysqld_safe & \
+    until mysqladmin ping --silent; do sleep 1; done && \
     echo "CREATE DATABASE gts; CREATE USER gts@localhost IDENTIFIED BY 'gts'; GRANT ALL ON *.* TO gts@localhost;" | mysql --user=root && \
     mysql --user=root --password= --database=gts < pkmn-classic-framework/library/database.sql && \
     cd pkmn-classic-framework/VeekunImport/bin/Debug/ && wine VeekunImport.exe && \
